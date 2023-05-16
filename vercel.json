@@ -11,10 +11,5 @@
       "src": "/api/v1/dataset",
       "dest": "server.js"
     }
-  ],
-  "functions": {
-    "server.js": {
-      "maxDuration": 120
-    }
-  }
+  ] 
 }
