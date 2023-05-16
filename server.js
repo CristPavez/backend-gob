@@ -26,10 +26,10 @@ module.exports = async (req, res) => {
       };
     });
 
-    res.status(200).json(contenidoJson);
+    return res.status(200).json(contenidoJson);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error al procesar la solicitud" });
+    return res.status(500).json({ error: "Error al procesar la solicitud" });
   }
 };
 
