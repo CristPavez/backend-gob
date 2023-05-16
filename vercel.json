@@ -14,7 +14,7 @@
   ],
   "functions": {
     "server.js": {
-      "maxDuration": 80
+      "maxDuration": 120
     }
   }
 }
