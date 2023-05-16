@@ -29,7 +29,7 @@ module.exports = async (req, res) => {
     return res.status(200).json(contenidoJson);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Error al procesar la solicitud" });
+    return res.status(500).json({ error: "Error al procesar la solicitud." });
   }
 };
 
