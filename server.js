@@ -36,7 +36,7 @@ module.exports = async (req, res) => {
     res.status(500).json({ error: "Error al procesar la solicitud" });
   }
 
-
+};
 function parseDataToJson(data) {
   const lines = data.split("\n");
   const headers = lines[0].split(",");
