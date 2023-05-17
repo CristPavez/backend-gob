@@ -47,7 +47,7 @@ app.get("/api/v1/dataset/:nombreArchivo", async (req, res) => {
     // Eliminar el archivo .zip temporal
     setTimeout(() => {
       fs.unlinkSync(zipFileName); // Eliminar el archivo .zip temporal después de un cierto período de tiempo
-    }, 60000); // Eliminar después de 1 minuto (ajusta el valor según tus necesidades)
+    }, 5000); // Eliminar después de 1 minuto (ajusta el valor según tus necesidades)
     // Almacenar los datos en la caché
     cache[nombreArchivo] = jsonData;
 
