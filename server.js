@@ -18,7 +18,7 @@ module.exports = async (req, res) => {
     );
     
     const contenidoJson = archivosTxt[2]
-    const data = zip.readAsText(contenidoJson);
+    const data = zip.readAsText(archivosTxt);
 
     
     return res.status(200).json(data);
