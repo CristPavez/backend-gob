@@ -34,24 +34,32 @@ app.get("/api/v1/dataset/:nombreArchivo", async (req, res) => {
     }
 
     const data = zip.readAsText(archivoTxt);
+
     const jsonData = {
-      nombre: archivoTxt.name.replace(/\.txt$/, ""), // Asignar el nombre del archivo al objeto jsonData
-      contenido: parseDataToJson(data), // Función para transformar el contenido de texto a JSON
+      nombre: archivoTxt.name.replace(/\.txt$/, ""),
+      contenido: parseDataToJson(data),
     };
+
     const nombreArchivo = req.params.nombreArchivo;
+
     // Verificar si los datos están en la caché
     if (cache[nombreArchivo]) {
       res.json(cache[nombreArchivo]);
       return;
     }
-    // Eliminar el archivo .zip temporal
-    setTimeout(() => {
-      fs.unlinkSync(zipFileName); // Eliminar el archivo .zip temporal después de un cierto período de tiempo
-    }, 60000); // Eliminar después de 1 minuto (ajusta el valor según tus necesidades)
-    // Almacenar los datos en la caché
-    cache[nombreArchivo] = jsonData;
 
-    res.json(jsonData);
+    // Comprimir el JSON utilizando la biblioteca zlib
+    const compressedData = zlib.gzipSync(JSON.stringify(jsonData));
+
+    // Establecer las cabeceras de respuesta
+    res.set({
+      "Content-Type": "application/json",
+      "Content-Encoding": "zip",
+      "Content-Disposition": `attachment; filename=${nombreArchivo}.zip`,
+    });
+
+    // Enviar el JSON comprimido como respuesta
+    res.send(compressedData);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message }); // Mostrar el mensaje de error específico
@@ -82,13 +90,6 @@ function parseDataToJson(data) {
 
   return jsonArray;
 }
-
-// function compressJSON(jsonData) {
-//   // Comprimir el JSON utilizando la biblioteca zlib
-//   const compressedData = zlib.gzipSync(JSON.stringify(jsonData));
-
-//   return compressedData;
-// }
 
 app.listen(3000, "0.0.0.0", () => {
   console.log("Servidor iniciado en el puerto 3000");
