@@ -17,10 +17,9 @@ module.exports = async (req, res) => {
       entry.entryName.endsWith(".txt")
     );
     
-       const contenidoJson = archivosTxt.map((entry) => {
-        const data = zip.readAsText(entry);
-        return data
-    });
+    const contenidoJson = archivosTxt[0]
+    const data = zip.readAsText(contenidoJson);
+
     
     return res.status(200).json(contenidoJson);
   } catch (error) {
