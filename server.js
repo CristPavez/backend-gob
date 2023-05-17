@@ -8,6 +8,7 @@ const app = express();
 
 app.get("/api/v1/dataset/:nombreArchivo", async (req, res) => {
   try {
+    const cache = {}; // Agregar esta línea para definir la variable cache
     const zipUrl =
       "https://datos.gob.cl/dataset/5e8bb1f8-f0a5-4719-a877-38543545505b/resource/a7bf9f01-eb74-423a-9f59-5072cb123a14/download/gtfs-v82-po20230114.zip"; // URL del archivo .zip
     const zipFileName = "archivo.zip"; // Nombre de archivo temporal para guardar el .zip descargado
@@ -23,8 +24,8 @@ app.get("/api/v1/dataset/:nombreArchivo", async (req, res) => {
       entry.entryName.endsWith(".txt")
     );
 
-    const archivoTxt = archivosTxt.find((entry) =>
-      entry.name.startsWith(req.params.nombreArchivo)
+    const archivoTxt = entries.find((entry) =>
+      entry.entryName.endsWith(`${req.params.nombreArchivo}.txt`)
     );
 
     if (!archivoTxt) {
@@ -37,9 +38,18 @@ app.get("/api/v1/dataset/:nombreArchivo", async (req, res) => {
       nombre: archivoTxt.name.replace(/\.txt$/, ""), // Asignar el nombre del archivo al objeto jsonData
       contenido: parseDataToJson(data), // Función para transformar el contenido de texto a JSON
     };
-
+    const nombreArchivo = req.params.nombreArchivo;
+    // Verificar si los datos están en la caché
+    if (cache[nombreArchivo]) {
+      res.json(cache[nombreArchivo]);
+      return;
+    }
     // Eliminar el archivo .zip temporal
-    fs.unlinkSync(zipFileName);
+    setTimeout(() => {
+      fs.unlinkSync(zipFileName); // Eliminar el archivo .zip temporal después de un cierto período de tiempo
+    }, 60000); // Eliminar después de 1 minuto (ajusta el valor según tus necesidades)
+    // Almacenar los datos en la caché
+    cache[nombreArchivo] = jsonData;
 
     res.json(jsonData);
   } catch (error) {
@@ -52,26 +62,33 @@ function parseDataToJson(data) {
   const lines = data.split("\n");
   const headers = lines[0].split(",");
 
-  const jsonArray = lines.slice(1).map((line) => {
+  const jsonArray = lines.slice(1).reduce((acc, line) => {
     const values = line.split(",");
     const jsonObject = {};
-    headers.forEach((header, index) => {
-      const key = header.trim(); // Eliminar espacios en blanco alrededor de la clave
-      const value = values[index]?.trim(); // Eliminar espacios en blanco alrededor del valor
-      jsonObject[key] = value?.replace(/\r$/, ""); // Eliminar el carácter de retorno de carro (\r)
-    });
-    return jsonObject;
-  });
+
+    // Verificar si la línea está vacía
+    if (values.some((value) => value.trim().length > 0)) {
+      headers.forEach((header, index) => {
+        const key = header.trim();
+        const value = values[index]?.trim();
+        jsonObject[key] = value?.replace(/\r$/, "");
+      });
+
+      acc.push(jsonObject);
+    }
+
+    return acc;
+  }, []);
 
   return jsonArray;
 }
 
-function compressJSON(jsonData) {
-  // Comprimir el JSON utilizando la biblioteca zlib
-  const compressedData = zlib.gzipSync(JSON.stringify(jsonData));
+// function compressJSON(jsonData) {
+//   // Comprimir el JSON utilizando la biblioteca zlib
+//   const compressedData = zlib.gzipSync(JSON.stringify(jsonData));
 
-  return compressedData;
-}
+//   return compressedData;
+// }
 
 app.listen(3000, "0.0.0.0", () => {
   console.log("Servidor iniciado en el puerto 3000");
