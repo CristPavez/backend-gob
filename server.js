@@ -20,11 +20,11 @@ module.exports = async (req, res) => {
     const contenidoJson = archivosTxt[0]
     const data = zip.readAsText(contenidoJson);
     const contenidoJson2 = archivosTxt[1]
-    const data2 = zip.readAsText(contenidoJson);
+    const data2 = zip.readAsText(contenidoJson2);
     const contenidoJson2 = archivosTxt[2]
     const data3 = zip.readAsText(contenidoJson);
     
-    return res.status(200).json(data3);
+    return res.status(200).json(data2);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Error al procesar la solicitud." });
