@@ -23,10 +23,16 @@ app.get("/api/v1/dataset", async (req, res) => {
       entry.entryName.endsWith(".txt")
     );
 
-    const data = zip.readAsText(archivosTxt[0]);
-    const jsonData = parseDataToJson(data); // Función para transformar el contenido de texto a JSON
-    
-    // const compressedData = compressJSON(jsonData); // Función para comprimir el JSON
+    const contenidoJson = archivosTxt.map((entry) => {
+      const data = zip.readAsText(entry);
+      const jsonData = parseDataToJson(data); // Función para transformar el contenido de texto a JSON
+      return {
+        nombre: entry.name, // Obtener el nombre del archivo
+        contenido: jsonData,
+      };
+    });
+    // console.log(contenidoJson);
+    // const compressedData = compressJSON(contenidoJson); // Función para comprimir el JSON
 
     // Descomprimir el contenido comprimido
     // const uncompressedData = zlib.unzipSync(compressedData);
@@ -34,7 +40,7 @@ app.get("/api/v1/dataset", async (req, res) => {
     // Eliminar el archivo .zip temporal
     fs.unlinkSync(zipFileName);
 
-    res.json(jsonData);
+    return res.status(200).json(contenidoJson);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message }); // Mostrar el mensaje de error específico
