@@ -31,9 +31,9 @@ module.exports = async (req, res) => {
     fs.unlinkSync(zipFileName);
 
     res.json(JSON.parse(uncompressedData));
-  } catch (error) {
+  }  catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error al procesar la solicitud" });
+    res.status(500).json({ error: error.message }); // Mostrar el mensaje de error específico
   }
 
 };
