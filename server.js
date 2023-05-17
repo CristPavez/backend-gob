@@ -16,7 +16,13 @@ module.exports = async (req, res) => {
     const archivosTxt = entries.filter((entry) =>
       entry.entryName.endsWith(".txt")
     );
-    return res.status(200).json(archivosTxt);
+    
+       const contenidoJson = archivosTxt.map((entry) => {
+        const data = zip.readAsText(entry);
+        return data
+    });
+    
+    return res.status(200).json(contenidoJson);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Error al procesar la solicitud." });
