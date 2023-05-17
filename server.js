@@ -6,7 +6,7 @@ const zlib = require("zlib");
 
 const app = express();
 
-app.get("/api/v1/dataset", async (req, res) => {
+app.get("/api/v1/dataset/:nombreArchivo", async (req, res) => {
   try {
     const zipUrl =
       "https://datos.gob.cl/dataset/5e8bb1f8-f0a5-4719-a877-38543545505b/resource/a7bf9f01-eb74-423a-9f59-5072cb123a14/download/gtfs-v82-po20230114.zip"; // URL del archivo .zip
@@ -23,24 +23,25 @@ app.get("/api/v1/dataset", async (req, res) => {
       entry.entryName.endsWith(".txt")
     );
 
-    const contenidoJson = archivosTxt.map((entry) => {
-      const data = zip.readAsText(entry);
-      const jsonData = parseDataToJson(data); // Función para transformar el contenido de texto a JSON
-      return {
-        nombre: entry.name, // Obtener el nombre del archivo
-        contenido: jsonData,
-      };
-    });
-    // console.log(contenidoJson);
-    // const compressedData = compressJSON(contenidoJson); // Función para comprimir el JSON
+    const archivoTxt = archivosTxt.find((entry) =>
+      entry.name.startsWith(req.params.nombreArchivo)
+    );
 
-    // Descomprimir el contenido comprimido
-    // const uncompressedData = zlib.unzipSync(compressedData);
+    if (!archivoTxt) {
+      res.status(404).json({ error: "Archivo no encontrado" });
+      return;
+    }
+
+    const data = zip.readAsText(archivoTxt);
+    const jsonData = {
+      nombre: archivoTxt.name.replace(/\.txt$/, ""), // Asignar el nombre del archivo al objeto jsonData
+      contenido: parseDataToJson(data), // Función para transformar el contenido de texto a JSON
+    };
 
     // Eliminar el archivo .zip temporal
     fs.unlinkSync(zipFileName);
 
-    return res.status(200).json(contenidoJson);
+    res.json(jsonData);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message }); // Mostrar el mensaje de error específico
