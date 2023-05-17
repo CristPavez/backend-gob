@@ -25,16 +25,16 @@ app.get("/api/v1/dataset", async (req, res) => {
 
     const data = zip.readAsText(archivosTxt[0]);
     const jsonData = parseDataToJson(data); // Función para transformar el contenido de texto a JSON
-    console.log(jsonData);
-    const compressedData = compressJSON(jsonData); // Función para comprimir el JSON
+    
+    // const compressedData = compressJSON(jsonData); // Función para comprimir el JSON
 
     // Descomprimir el contenido comprimido
-    const uncompressedData = zlib.unzipSync(compressedData);
+    // const uncompressedData = zlib.unzipSync(compressedData);
 
     // Eliminar el archivo .zip temporal
     fs.unlinkSync(zipFileName);
 
-    res.json(JSON.parse(uncompressedData));
+    res.json(jsonData);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message }); // Mostrar el mensaje de error específico
