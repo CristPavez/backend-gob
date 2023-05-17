@@ -9,7 +9,14 @@ module.exports = async (req, res) => {
     // Descargar el archivo .zip
     const response = await axios.get(zipUrl, { responseType: "arraybuffer" });
     const zipData = response.data;
-    return res.status(200).json(zipData);
+    
+      // Extraer archivos .txt del .zip descargado
+    const zip = new AdmZip(zipData);
+    const entries = zip.getEntries();
+    const archivosTxt = entries.filter((entry) =>
+      entry.entryName.endsWith(".txt")
+    );
+    return res.status(200).json(archivosTxt);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Error al procesar la solicitud." });
