@@ -1,5 +1,6 @@
 const AdmZip = require("adm-zip");
 const axios = require("axios");
+const zlib = require("zlib");
 
 module.exports = async (req, res) => {
   try {
@@ -9,21 +10,43 @@ module.exports = async (req, res) => {
     // Descargar el archivo .zip
     const response = await axios.get(zipUrl, { responseType: "arraybuffer" });
     const zipData = response.data;
-    
-      // Extraer archivos .txt del .zip descargado
+
+    // Extraer archivos .txt del .zip descargado
     const zip = new AdmZip(zipData);
     const entries = zip.getEntries();
     const archivosTxt = entries.filter((entry) =>
       entry.entryName.endsWith(".txt")
     );
-    
-    const contenidoJson = archivosTxt[3]
-    const data = zip.readAsText(contenidoJson);
 
-    
-    return res.status(200).json(data);
+    const jsonResponses = [];
+
+    // Transformar cada archivo .txt a JSON
+    for (const archivoTxt of archivosTxt) {
+      const txtData = zip.readAsText(archivoTxt);
+      const jsonData = transformToJSON(txtData);
+      const compressedData = compressJSON(jsonData);
+      jsonResponses.push(compressedData);
+    }
+
+    return res.status(200).json(jsonResponses);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Error al procesar la solicitud." });
   }
 };
+
+function transformToJSON(txtData) {
+  // Lógica para transformar el contenido del archivo .txt a JSON
+  // Puedes usar JSON.parse() u otras técnicas dependiendo de la estructura de tus archivos .txt
+
+  const jsonData = JSON.parse(txtData); // Reemplaza esto con la transformación real
+
+  return jsonData;
+}
+
+function compressJSON(jsonData) {
+  // Comprimir el JSON utilizando la biblioteca zlib
+  const compressedData = zlib.gzipSync(JSON.stringify(jsonData));
+
+  return compressedData;
+}
