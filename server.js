@@ -10,7 +10,3 @@ module.exports = async (req, res) => {
     return res.status(500).json({ error: "Error al procesar la solicitud." });
   }
 };
-
-app.listen(3000, () => {
-  console.log("Servidor iniciado en el puerto 3000");
-});
